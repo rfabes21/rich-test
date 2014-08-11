@@ -24,6 +24,9 @@ define(function(require, exports, module) {
      * @static
      * @class Engine
      */
+
+    var Time = require('../utilities/Time');
+
     var Context = require('./Context');
     var EventHandler = require('./EventHandler');
     var OptionsManager = require('./OptionsManager');
@@ -66,7 +69,7 @@ define(function(require, exports, module) {
      */
     Engine.step = function step() {
         var currentTime = Date.now();
-
+        Time.now = currentTime;
         // skip frame if we're over our framerate cap
         if (frameTimeLimit && currentTime - lastTime < frameTimeLimit) return;
 

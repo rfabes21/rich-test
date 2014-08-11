@@ -9,7 +9,7 @@ var ApplicationDelegate = marionette.Controller.extend({
 
     initialize: function(options){
         this.app = options.app;
-        this.app.window.context.setPerspective(3000);
+        // this.app.window.context.setPerspective(3000);
         // this.app.window.show(new SlideshowLayout());
         // this.app.window.show(new CubeLayout());
         this.app.window.show(new CubeScrollLayout());

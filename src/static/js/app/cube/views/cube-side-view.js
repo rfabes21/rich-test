@@ -27,6 +27,7 @@ var CubeSideView = rich.ItemView.extend({
 
 
         var rotationXMod = new Modifier({
+            origin: [0.5, 0.5],
             transform: Transform.rotateX(this.model.get('rx'))
         });
 
@@ -42,8 +43,7 @@ var CubeSideView = rich.ItemView.extend({
 
     },
 
-    onRender: function(){
-
+    onShow: function(){
     },
 });
 

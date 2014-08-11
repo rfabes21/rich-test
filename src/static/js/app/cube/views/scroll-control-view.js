@@ -3,10 +3,11 @@ define(function (require, exports, module) {
 var rich = require('rich');
 var template = require('hbs!../../templates/scroll-control-view');
 var Modifier = require('famous/core/Modifier');
+var Transform = require('famous/core/Transform');
 var CubeView = require('./cube-view').CubeView;
 
-var w = window.innerWidth * 0.6;
-var h = window.innerHeight * 0.6;
+var w = window.innerWidth;
+var h = window.innerHeight;
 
 var ScrollControlView = rich.ItemView.extend({
     className: 'scroll-controlView',
@@ -20,13 +21,25 @@ var ScrollControlView = rich.ItemView.extend({
         this.addSubview(this.cubeView);
 
         this.modifier = new Modifier({
-            origin: [0.5, 0.5]
+            origin: [0.5, 0.5],
         });
     },
 
     setScrollPosition: function(yPos){
-        var yValue = Math.abs(yPos);
+        // console.log(yPos)
+        this._currentPos = yPos;
+        // console.log(yPos)
         this.cubeView.scrollPosition(yPos);
+        // this.cubeView.invalidateView();
+    },
+
+    getScrollPosition: function(){
+        var totalHeight = h * 4.7208;
+        var tileHeight = totalHeight / 3;
+        var selectedSpot = Math.round(this._currentPos/tileHeight);
+
+
+        return -selectedSpot * tileHeight;
     },
 });
 

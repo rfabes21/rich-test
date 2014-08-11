@@ -8,6 +8,8 @@
  */
 
 define(function(require, exports, module) {
+    var Time = require('../utilities/Time');
+
 
     /**
      *
@@ -247,7 +249,7 @@ define(function(require, exports, module) {
             }
         }
 
-        this._startTime = Date.now();
+        this._startTime = Time.now;
         this._endValue = _clone(endValue);
         this._startVelocity = _clone(transition.velocity);
         this._duration = transition.duration;
@@ -364,7 +366,7 @@ define(function(require, exports, module) {
             return;
         }
 
-        if (!timestamp) timestamp = Date.now();
+        if (!timestamp) timestamp = Time.now;
         if (this._updateTime >= timestamp) return;
         this._updateTime = timestamp;
 

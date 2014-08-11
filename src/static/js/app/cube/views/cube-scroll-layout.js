@@ -8,9 +8,10 @@ var Transform = require('famous/core/Transform');
 var scroll = require('rich/scrollview');
 var CubeView = require('./cube-view').CubeView;
 var ScrollControlView = require('./scroll-control-view').ScrollControlView;
+var Easing = require('famous/transitions/Easing');
 
-var w = window.innerWidth * 0.6;
-var h = window.innerHeight * 0.6;
+var w = window.innerWidth;
+var h = window.innerHeight;
 var scrollH = h * 3;
 
 var CubeScrollLayout = rich.LayoutView.extend({
@@ -28,13 +29,17 @@ var CubeScrollLayout = rich.LayoutView.extend({
     },
 
     onShow: function(){
-        var scrollView = new scroll.ScrollView({
-            contentSize: [w, h * 12],
+        var scrollView =  this.scrollView = new scroll.ScrollView({
+            className: 'scroll-view',
+            contentSize: [w, h * 4.14],
             size: [w, h],
-            direction: scroll.DIRECTION_Y
+            direction: scroll.DIRECTION_Y,
+            perspective: 3000,
+            hidesOverflow: false
         });
 
         this.listenTo(scrollView, 'scroll:update', this.onScrollUpdate);
+        this.listenTo(scrollView, 'scroll:end', this.onScrollEnd);
 
         this.scrollControlView = new ScrollControlView({
             size: [w, h]
@@ -42,13 +47,18 @@ var CubeScrollLayout = rich.LayoutView.extend({
 
         scrollView.addSubview(this.scrollControlView);
 
-        this.scrollContainer.context.setPerspective(5000);
         this.scrollContainer.show(scrollView);
     },
 
     onScrollUpdate: function(data){
-        var y = -data[1];
+        var y = Math.abs(data[1]);
+        y = Math.round(y);
         this.scrollControlView.setScrollPosition(y);
+    },
+
+    onScrollEnd: function(){
+        var pos = this.scrollControlView.getScrollPosition();
+        this.scrollView.setScrollPosition(0, pos, true, {duration: 1000, curve: Easing.inOutQuad});
     },
 
 

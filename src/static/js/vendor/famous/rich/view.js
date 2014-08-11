@@ -314,7 +314,7 @@ var FamousView = marionette.View.extend({
     },
 
     render: function(){
-        if(this.root === null || this.needsDisplay()){
+        if(this.root === null || this.needsDisplay() || true){
             this._render();
         }
         return this._spec;

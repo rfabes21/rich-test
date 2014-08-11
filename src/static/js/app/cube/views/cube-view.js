@@ -10,16 +10,18 @@ var Transform = require('famous/core/Transform');
 var CubeSide = require('app/cube/models/cube-side').CubeSide;
 var CubeSideView = require('./cube-side-view').CubeSideView;
 
-var w = window.innerWidth * 0.6;
-var h = window.innerHeight * 0.6;
+var w = window.innerWidth;
+var h = window.innerHeight;
 
 var CubeView = rich.CollectionView.extend({
+    className: 'cube-view',
     childView: CubeSideView,
     _yPos: 0,
     _rotation: 0,
     events: {
         'childview:click': 'wantsRotateCube'
     },
+
 
     initialize: function(){
 
@@ -29,6 +31,7 @@ var CubeView = rich.CollectionView.extend({
             size: [w, h],
             color: utils.colors.blue[1],
             content: 'front',
+            tz: h/2
         });
 
         var back = new CubeSide({
@@ -36,8 +39,7 @@ var CubeView = rich.CollectionView.extend({
             color: utils.colors.blue[3],
             content: 'back',
             rx: Math.PI,
-            tz: h,
-            ty: -h,
+            tz: h/2,
         });
 
         var top = new CubeSide({
@@ -45,8 +47,7 @@ var CubeView = rich.CollectionView.extend({
             color: utils.colors.blue[5],
             content: 'top',
             rx: Math.PI/2,
-            // tz: h,
-            ty: -h
+            tz: h/2,
         });
 
         var bottom = new CubeSide({
@@ -54,10 +55,10 @@ var CubeView = rich.CollectionView.extend({
             color: utils.colors.blue[7],
             content: 'bottom',
             rx: 1.5 * Math.PI,
-            tz: h,
+            tz: h/2,
         });
 
-        this.collection = new backbone.Collection([front, back, top, bottom]);
+        this.collection = new backbone.Collection([front, back, bottom, top]);
 
         // prep for animation and move
         // container with scrollView
@@ -69,16 +70,18 @@ var CubeView = rich.CollectionView.extend({
         var self = this;
 
         positionMod.transformFrom(function(){
-            return Transform.translate(0, self._yPos, 0);
+            return Transform.translate(0, self._yPos, -h/2);
         });
 
         rotationMod.transformFrom(function(){
             return Transform.rotateX(self._rotation);
         });
 
-
         // this.on('childview:click', this.wantsRotateCube.bind(this));
 
+    },
+
+    onShow: function(){
     },
 
     modifierForViewAtIndex: function(){
@@ -86,13 +89,31 @@ var CubeView = rich.CollectionView.extend({
     },
 
     scrollPosition: function(yPos){
+        if(yPos < 1){
+            this._yPos = 0;
+            this._rotation = 0;
+            this.invalidateView();
+            return;
+        }
         this._yPos = yPos;
-        this.invalidateView();
+
 
         // set h var for scroll length
         var percent = Math.abs(yPos/(h));
         this._rotation = percent;
+        this.invalidateView();
+        // console.log(percent);
         // this.setRotationPos(percent);
+    },
+
+    wantsSnapToScroll: function(){
+        var percent = this._yPos / h;
+        console.log(percent);
+        var duration = 1000;
+        if (percent < 0.785) {
+            this.scrollView.setScrollPosition(0, 0 , true,
+                {duration: duration, curve: Easing.inOutQuad});
+        }
     },
 
     // wantsRotateCube: function(){

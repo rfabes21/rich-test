@@ -6,6 +6,7 @@ define(function (require, exports, module) {
     var PhysicsEngine = require('famous/physics/PhysicsEngine');
     var Particle = require('famous/physics/bodies/Particle');
     var Spring = require('famous/physics/forces/Spring');
+    var Engine = require('famous/core/Engine');
     var TouchSync = require('famous/inputs/TouchSync');
     var ScrollSync = require('famous/inputs/ScrollSync');
     var EventHandler = require('famous/core/EventHandler');
@@ -44,6 +45,12 @@ define(function (require, exports, module) {
             this._physicsEngine = new PhysicsEngine();
             this._physicsEngine.addBody(this._particle);
 
+            // transitionables setup
+            var self = this;
+            this._particle.positionFrom(function(){
+                return [self._positionX.get(), self._positionY.get()];
+            });
+
             // scrollable wrapper
             this._scrollableView = new FamousView({modifier: this._particle});
             this.contentSize = options.contentSize || this.contentSize || [0, 0];
@@ -54,6 +61,12 @@ define(function (require, exports, module) {
             // options
             this.direction = options.direction;
 
+            this.hidesOverflow = _.isUndefined(options.hidesOverflow) ? true : options.hidesOverflow;
+
+            this.perspective = options.perspective || false;
+
+            this.on('show', this.wantsSetPerspective);
+
             if(!_.isUndefined(options.directionalLockEnabled)){
                 this._directionalLockEnabled = options.directionalLockEnabled;
             }
@@ -62,6 +75,12 @@ define(function (require, exports, module) {
             }
 
             this.listenTo(this._scrollableView, events.RENDER, this._onFamousRender);
+        },
+
+        wantsSetPerspective: function(){
+            if (this.perspective) {
+                this.container.context.setPerspective(this.perspective);
+            }
         },
 
         setDirectionalLockEnabled: function(val){
@@ -101,11 +120,12 @@ define(function (require, exports, module) {
         },
 
         onElement: function(){
-
-            this.$el.css({
-                // overflow:'hidden'
-                border: '1px solid red'
-            });
+            if (this.hidesOverflow) {
+                this.$el.css({
+                    overflow: 'hidden',
+                    // border: '1px solid red',
+                });
+            }
 
             // we have to map the events into an event handler so it conforms
             // to how famous wants things, this listens to all these events and has
@@ -122,6 +142,7 @@ define(function (require, exports, module) {
 
             var contentSize = this.getContentSize();
             var containerSize = this.getSize();
+
             var xLimit = - Math.max(contentSize[0] - containerSize[0], 0);
             var yLimit = - Math.max(contentSize[1] - containerSize[1], 0);
             x = Math.max(x, xLimit);
@@ -143,15 +164,48 @@ define(function (require, exports, module) {
             }
 
             // don't let the scroll position be anything crazy
-            this._positionX.set(x);
-            this._positionY.set(y);
-            this._particle.setPosition([x, y]);
-            this._scrollableView.invalidateView();
+
+            if(transition){
+                var obj = this._prepareScrollModification(transition.duration);
+                this._positionY.set(y, transition, obj.callback);
+                return obj.deferred;
+            }else{
+                this._positionY.halt();
+                this._positionX.set(x);
+                this._positionY.set(y, {duration: 0});
+                // this._scrollableView.invalidateView();
+            }
         },
+
+        _prepareScrollModification: function(duration){
+            var deferred = $.Deferred();
+
+            var self = this;
+
+            var tick = function(){
+                self.trigger('scroll:update', self.getScrollPosition());
+                self.invalidateView();
+                self._scrollableView.invalidateView();
+            };
+
+            var callback = function(){
+                Engine.removeListener('postrender', tick);
+                deferred.resolve(this);
+            }.bind(this);
+            if(!duration){
+                this.invalidateView();
+            }else{
+                Engine.on('postrender', tick);
+            }
+
+            return {deferred: deferred.promise(), callback: callback};
+        },
+
+
 
         addSubview: function(view){
             this._scrollableView.addSubview(view);
-            this.listenTo(view, events.INVALIDATE, this.update);
+            // this.listenTo(view, events.INVALIDATE, this.update);
         },
 
         removeSubview: function(v){
@@ -206,14 +260,18 @@ define(function (require, exports, module) {
             this._scrollHandler.pipe(this.sync);
         },
 
-
-        _onScrollEnd: function(data){
-            this.trigger('scroll:end',this.getScrollPosition());
-        },
-
         _onScrollStart: function(data){
+            this.setNeedsDisplay(true);
+            this._scrollableView.setNeedsDisplay(true);
             this._scrollDirection = null;
             this.trigger('scroll:start', this.getScrollPosition());
+        },
+
+
+        _onScrollEnd: function(data){
+            this.setNeedsDisplay(false);
+            this._scrollableView.setNeedsDisplay(false);
+            this.trigger('scroll:end',this.getScrollPosition());
         },
 
         _setScrollDirection: function(delta){
@@ -242,7 +300,8 @@ define(function (require, exports, module) {
                 }else{
                     // add a spring
                     this._particle.setVelocity(0);
-                    this._physicsEngine.attach([this._spring], this._particle);
+                    // undo this dino
+                    // this._physicsEngine.attach([this._spring], this._particle);
                     this._hasSpring = true;
                     this._scrollableView.setNeedsDisplay(true);
                     this._scrollableView.on(events.RENDER, this._onSpringRender);
@@ -251,7 +310,8 @@ define(function (require, exports, module) {
                 this._positionX.set(xSpringPos);
             }else{
                 if(this._hasSpring){
-                    this._physicsEngine.detachAll();
+                    // undo this dino
+                    // this._physicsEngine.detachAll();
                     this._particle.setVelocity(0);
                     this._hasSpring = false;
                     this._scrollableView.setNeedsDisplay(false);
