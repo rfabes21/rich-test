@@ -13,6 +13,7 @@ define(function (require, exports, module) {
     var EventHandler = require('famous/core/EventHandler');
     var Transitionable = require("famous/transitions/Transitionable");
     var events = require('./events');
+    var SimplePlugin = require('./scroll-drivers/simple-plugin').SimplePlugin;
 
 
     GenericSync.register({
@@ -60,6 +61,10 @@ define(function (require, exports, module) {
             FamousView.prototype.constructor.apply(this, arguments);
             this._scrollHandler = new EventHandler();
 
+            // set up the scroll plugin
+            var ScrollPlugin = options.scrollPlugin || SimplePlugin;
+            this._plugin = new ScrollPlugin(this);
+
             // options
             this.direction = options.direction;
 
@@ -67,7 +72,7 @@ define(function (require, exports, module) {
 
             this.perspective = options.perspective || false;
 
-            //Should be .on('context') TODO=
+            //Should be .on('context') TODO
             this.on('show', this.wantsSetPerspective);
 
             if(!_.isUndefined(options.directionalLockEnabled)){
@@ -176,7 +181,7 @@ define(function (require, exports, module) {
                 this._positionY.halt();
                 this._positionX.set(x);
                 this._positionY.set(y, {duration: 0});
-                // this._scrollableView.invalidateView();
+                this._scrollableView.invalidateView();
             }
         },
 
@@ -252,7 +257,7 @@ define(function (require, exports, module) {
             this.sync = new GenericSync({
                 "scroll" : {},
                 "touch" : {},
-                "mouse" : {scale : 3}
+                "mouse" : {scale : 5}
             });
 
             if(this._scrollEnabled){
@@ -327,6 +332,7 @@ define(function (require, exports, module) {
 
         _onSpringRender: function(){
             // this triggers an update for when the spring is updating
+
             this.trigger('scroll:update', this.getScrollPosition());
         },
 

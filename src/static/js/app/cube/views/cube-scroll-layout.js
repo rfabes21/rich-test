@@ -31,7 +31,8 @@ var CubeScrollLayout = rich.LayoutView.extend({
     onShow: function(){
         var scrollView =  this.scrollView = new scroll.ScrollView({
             className: 'scroll-view',
-            contentSize: [w, h * 4.14],
+            // contentSize: [w, h * 4.14],
+            contentSize: [w, h * 50],
             size: [w, h],
             direction: scroll.DIRECTION_Y,
             perspective: 3000,
