@@ -102,7 +102,7 @@ var CubeView = rich.CollectionView.extend({
         var percent = Math.abs(yPos/(h));
         this._rotation = percent;
         this.invalidateView();
-        // console.log(percent);
+
         // this.setRotationPos(percent);
     },
 

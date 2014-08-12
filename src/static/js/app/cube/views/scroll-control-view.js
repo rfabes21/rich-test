@@ -34,6 +34,9 @@ var ScrollControlView = rich.ItemView.extend({
     },
 
     getScrollPosition: function(){
+        // UPDATE for ryan
+        //needs to be updated with proper math calcs
+
         var totalHeight = h * 4.7208;
         var tileHeight = totalHeight / 3;
         var selectedSpot = Math.round(this._currentPos/tileHeight);

@@ -58,7 +58,7 @@ var CubeScrollLayout = rich.LayoutView.extend({
 
     onScrollEnd: function(){
         var pos = this.scrollControlView.getScrollPosition();
-        this.scrollView.setScrollPosition(0, pos, true, {duration: 1000, curve: Easing.inOutQuad});
+        this.scrollView.setScrollPosition(0, pos, true, {duration: 500, curve: Easing.inOutQuad});
     },
 
 
