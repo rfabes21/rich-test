@@ -9,7 +9,6 @@ define(function (require, exports, module) {
     var Engine = require('famous/core/Engine');
     var TouchSync = require('famous/inputs/TouchSync');
     var ScrollSync = require('famous/inputs/ScrollSync');
-    var MouseSync = require('famous/inputs/MouseSync');
     var EventHandler = require('famous/core/EventHandler');
     var Transitionable = require("famous/transitions/Transitionable");
     var events = require('./events');
@@ -17,8 +16,7 @@ define(function (require, exports, module) {
 
     GenericSync.register({
         "touch"  : TouchSync,
-        "scroll" : ScrollSync,
-        "mouse"  : MouseSync
+        "scroll" : ScrollSync
     });
 
     var DIRECTION_X = GenericSync.DIRECTION_X;
@@ -67,7 +65,6 @@ define(function (require, exports, module) {
 
             this.perspective = options.perspective || false;
 
-            //Should be .on('context') TODO=
             this.on('show', this.wantsSetPerspective);
 
             if(!_.isUndefined(options.directionalLockEnabled)){
@@ -80,6 +77,10 @@ define(function (require, exports, module) {
             this.listenTo(this._scrollableView, events.RENDER, this._onFamousRender);
         },
 
+        /**
+         * option to set perspecive to declared int
+         * @return {param} sets the 3D perspective in px from el
+         */
         wantsSetPerspective: function(){
             if (this.perspective) {
                 this.container.context.setPerspective(this.perspective);
@@ -241,7 +242,7 @@ define(function (require, exports, module) {
         },
 
         _bindScrollEvents: function(){
-            var events = ['touchstart', 'touchmove', 'touchend', 'mousewheel', 'wheel', 'mousedown', 'mousemove', 'mouseup'];
+            var events = ['touchstart', 'touchmove', 'touchend', 'mousewheel', 'wheel'];
             var self = this;
             _.each(events, function(type){
                 this.$el.on(type, function(e){
@@ -249,11 +250,9 @@ define(function (require, exports, module) {
                 });
             }, this);
 
-            this.sync = new GenericSync({
-                "scroll" : {},
-                "touch" : {},
-                "mouse" : {scale : 3}
-            });
+            this.sync = new GenericSync(
+                ["scroll", "touch"]
+            );
 
             if(this._scrollEnabled){
                 this.sync.on('start', this._onScrollStart);
