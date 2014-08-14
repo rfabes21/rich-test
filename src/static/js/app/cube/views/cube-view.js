@@ -22,7 +22,6 @@ var CubeView = rich.CollectionView.extend({
         'childview:click': 'wantsRotateCube'
     },
 
-
     initialize: function(){
 
         this.rotation = 0;

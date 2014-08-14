@@ -14,7 +14,7 @@ define(function (require, exports, module) {
     var Transitionable = require("famous/transitions/Transitionable");
     var events = require('./events');
     var SimplePlugin = require('./scroll-drivers/simple-plugin').SimplePlugin;
-
+    var BouncePlugin = require('./scroll-drivers/bounce-plugin').BouncePlugin;
 
     GenericSync.register({
         "touch"  : TouchSync,
@@ -62,7 +62,7 @@ define(function (require, exports, module) {
             this._scrollHandler = new EventHandler();
 
             // set up the scroll plugin
-            var ScrollPlugin = options.scrollPlugin || SimplePlugin;
+            var ScrollPlugin = options.scrollPlugin || BouncePlugin;
             this._plugin = new ScrollPlugin(this);
 
             // options
@@ -147,7 +147,6 @@ define(function (require, exports, module) {
         },
 
         _cleanScrollPosition: function(x, y){
-
             var contentSize = this.getContentSize();
             var containerSize = this.getSize();
 
@@ -297,37 +296,38 @@ define(function (require, exports, module) {
         },
 
         _updateSpring: function(addSpring, xSpringPos, ySpringPos, springAnchor){
-            var springOptions = {
-                anchor: springAnchor,
-                period: 500,
-                dampingRatio: 1
-            };
+            this._plugin.updateSpring(addSpring, xSpringPos, ySpringPos, springAnchor);
+            // var springOptions = {
+            //     anchor: springAnchor,
+            //     period: 500,
+            //     dampingRatio: 1
+            // };
 
-            if(addSpring){
-                this._spring.setOptions(springOptions);
-                if(this._hasSpring){
-                    // update spring
-                }else{
-                    // add a spring
-                    this._particle.setVelocity(0);
-                    // undo this dino
-                    // this._physicsEngine.attach([this._spring], this._particle);
-                    this._hasSpring = true;
-                    this._scrollableView.setNeedsDisplay(true);
-                    this._scrollableView.on(events.RENDER, this._onSpringRender);
-                }
-                this._positionY.set(ySpringPos);
-                this._positionX.set(xSpringPos);
-            }else{
-                if(this._hasSpring){
-                    // undo this dino
-                    // this._physicsEngine.detachAll();
-                    this._particle.setVelocity(0);
-                    this._hasSpring = false;
-                    this._scrollableView.setNeedsDisplay(false);
-                    this._scrollableView.off(events.RENDER, this._onSpringRender);
-                }
-            }
+            // if(addSpring){
+            //     this._spring.setOptions(springOptions);
+            //     if(this._hasSpring){
+            //         // update spring
+            //     }else{
+            //         // add a spring
+            //         this._particle.setVelocity(0);
+            //         // undo this dino
+            //         // this._physicsEngine.attach([this._spring], this._particle);
+            //         this._hasSpring = true;
+            //         this._scrollableView.setNeedsDisplay(true);
+            //         this._scrollableView.on(events.RENDER, this._onSpringRender);
+            //     }
+            //     this._positionY.set(ySpringPos);
+            //     this._positionX.set(xSpringPos);
+            // }else{
+            //     if(this._hasSpring){
+            //         // undo this dino
+            //         // this._physicsEngine.detachAll();
+            //         this._particle.setVelocity(0);
+            //         this._hasSpring = false;
+            //         this._scrollableView.setNeedsDisplay(false);
+            //         this._scrollableView.off(events.RENDER, this._onSpringRender);
+            //     }
+            // }
         },
 
         _onSpringRender: function(){
@@ -350,63 +350,64 @@ define(function (require, exports, module) {
         },
 
         _onScrollUpdate: function(data){
-            var delta = data.delta;
-            this._setScrollDirection(delta);
+            this._plugin.onScrollUpdate(data);
+            // var delta = data.delta;
+            // this._setScrollDirection(delta);
 
-            // normalize the data based on direction
+            // // normalize the data based on direction
 
-            if(this.direction == DIRECTION_Y){
-                delta[0] = 0;
-                if(this._scrollDirection == 'x' && this.getDirectionalLockEnabled())return;
-            }else if(this.direction == DIRECTION_X){
-                delta[1] = 0;
-                if(this._scrollDirection == 'y' && this.getDirectionalLockEnabled())return;
-            }
+            // if(this.direction == DIRECTION_Y){
+            //     delta[0] = 0;
+            //     if(this._scrollDirection == 'x' && this.getDirectionalLockEnabled())return;
+            // }else if(this.direction == DIRECTION_X){
+            //     delta[1] = 0;
+            //     if(this._scrollDirection == 'y' && this.getDirectionalLockEnabled())return;
+            // }
 
-            var pos = this._particle.getPosition();
-            var gotoPosX = this._positionX.get() + delta[0];
-            var gotoPosY = this._positionY.get() + delta[1];
-            var contentSize = this.getContentSize();
-            var containerSize = this.getSize();
-            var scrollableDistanceX = contentSize[0] - containerSize[0];
-            var scrollableDistanceY = contentSize[1] - containerSize[1];
+        //     var pos = this._particle.getPosition();
+        //     var gotoPosX = this._positionX.get() + delta[0];
+        //     var gotoPosY = this._positionY.get() + delta[1];
+        //     var contentSize = this.getContentSize();
+        //     var containerSize = this.getSize();
+        //     var scrollableDistanceX = contentSize[0] - containerSize[0];
+        //     var scrollableDistanceY = contentSize[1] - containerSize[1];
 
-            var isPastTop = gotoPosY > 0;
-            var isPastBottom = scrollableDistanceY + gotoPosY < 0;
-            var isPastLeft = gotoPosX > 0;
-            var isPastRight = scrollableDistanceX + gotoPosX < 0;
+        //     var isPastTop = gotoPosY > 0;
+        //     var isPastBottom = scrollableDistanceY + gotoPosY < 0;
+        //     var isPastLeft = gotoPosX > 0;
+        //     var isPastRight = scrollableDistanceX + gotoPosX < 0;
 
-            var isOutOfBoundsY = isPastTop || isPastBottom;
-            var isOutOfBoundsX = isPastLeft || isPastRight;
+        //     var isOutOfBoundsY = isPastTop || isPastBottom;
+        //     var isOutOfBoundsX = isPastLeft || isPastRight;
 
-            var springAnchor = [gotoPosX, gotoPosY, 0];
-            var addSpring = false;
+        //     var springAnchor = [gotoPosX, gotoPosY, 0];
+        //     var addSpring = false;
 
-            var xSpringPos = gotoPosX;
-            var ySpringPos = gotoPosY;
+        //     var xSpringPos = gotoPosX;
+        //     var ySpringPos = gotoPosY;
 
-            var shouldScroll =  this._shouldScroll(contentSize, containerSize);
-            if(!shouldScroll)return;
+        //     var shouldScroll =  this._shouldScroll(contentSize, containerSize);
+        //     if(!shouldScroll)return;
 
-            if(isOutOfBoundsX && this.direction != DIRECTION_Y){
-                xSpringPos = isPastRight ? -scrollableDistanceX : 0;
-                springAnchor[0] = xSpringPos;
-                addSpring = true;
-            }
-            if(isOutOfBoundsY && this.direction != DIRECTION_X){
-                ySpringPos = isPastBottom ? -scrollableDistanceY : 0;
-                springAnchor[1] = ySpringPos;
-                addSpring = true;
-            }
+        //     if(isOutOfBoundsX && this.direction != DIRECTION_Y){
+        //         xSpringPos = isPastRight ? -scrollableDistanceX : 0;
+        //         springAnchor[0] = xSpringPos;
+        //         addSpring = true;
+        //     }
+        //     if(isOutOfBoundsY && this.direction != DIRECTION_X){
+        //         ySpringPos = isPastBottom ? -scrollableDistanceY : 0;
+        //         springAnchor[1] = ySpringPos;
+        //         addSpring = true;
+        //     }
 
-            // this gets rid of the flutter when you're already going out of bounds
-            if(this._hasSpring && addSpring){
-                return;
-            }
+        //     // this gets rid of the flutter when you're already going out of bounds
+        //     if(this._hasSpring && addSpring){
+        //         return;
+        //     }
 
-            this.setScrollPosition(gotoPosX, gotoPosY, false);
-            this._updateSpring(addSpring, xSpringPos, ySpringPos, springAnchor);
-            this.trigger('scroll:update', this.getScrollPosition());
+        //     this.setScrollPosition(gotoPosX, gotoPosY, false);
+        //     this._updateSpring(addSpring, xSpringPos, ySpringPos, springAnchor);
+        //     this.trigger('scroll:update', this.getScrollPosition());
         },
 
     });

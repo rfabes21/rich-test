@@ -35,8 +35,8 @@ var CubeScrollLayout = rich.LayoutView.extend({
             contentSize: [w, h * 50],
             size: [w, h],
             direction: scroll.DIRECTION_Y,
-            perspective: 3000,
-            hidesOverflow: false
+            perspective: 2000,
+            hidesOverflow: false,
         });
 
         this.listenTo(scrollView, 'scroll:update', this.onScrollUpdate);
